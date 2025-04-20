@@ -1,12 +1,39 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Package, BarChart, LogIn, ShoppingBag } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const Index = () => {
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  
+  // Add navigation buttons for authenticated users
+  const getDashboardLink = () => {
+    if (!isAuthenticated || !user) return null;
+    const dashboardPath = user.role === 'merchant' ? '/dashboard' : '/customer-dashboard';
+    return (
+      <Link to={dashboardPath}>
+        <Button className="text-lg px-6 py-6">
+          Go to Dashboard
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </Link>
+    );
+  };
+
+  const handleReturnClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      navigate('/login?role=customer&redirect=/customer-form');
+    }
+  };
   return (
     <div className="min-h-screen bg-white">
+      <Navbar />
       {/* Hero Section */}
       <div className="bg-returnbox-light-blue py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,20 +44,34 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8">
               The easiest way for Romanian online stores to manage product returns
             </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-              <Link to="/magazinul-meu">
-                <Button className="text-lg px-6 py-6">
-                  Request a Return
-                  <Package className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="outline" className="text-lg px-6 py-6">
-                  Merchant Login
-                  <LogIn className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
+            {!isAuthenticated ? (
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+                <Link to="/customer-form" onClick={handleReturnClick}>
+                  <Button className="text-lg px-6 py-6">
+                    Request a Return
+                    <Package className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" className="text-lg px-6 py-6">
+                    Login
+                    <LogIn className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            ) : user.role === 'customer' ? (
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+                {getDashboardLink()}
+                <Link to="/customer-form">
+                  <Button variant="outline" className="text-lg px-6 py-6">
+                    New Return Request
+                    <Package className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            )
+            : getDashboardLink()
+          }
           </div>
         </div>
       </div>
@@ -125,7 +166,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="mt-8">
-                <Link to="/magazinul-meu">
+                <Link to="/customer-form" onClick={handleReturnClick}>
                   <Button className="w-full">
                     Start a Return
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -170,7 +211,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="mt-8">
-                <Link to="/register">
+                <Link to="/register?role=merchant">
                   <Button variant="outline" className="w-full">
                     Create Merchant Account
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -197,9 +238,9 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/login">
                 <Button variant="outline" className="w-full sm:w-auto">
-                  View Demo
+                  Sign In
                 </Button>
               </Link>
             </div>

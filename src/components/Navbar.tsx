@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Bell, Menu, User, LogIn } from 'lucide-react';
+import { Bell, Menu, User, LogIn, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,20 +12,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarProps {
   merchantName?: string;
 }
 
-const Navbar = ({ merchantName }: NavbarProps) => {
+const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
   const isMobile = useIsMobile();
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
   
   // Determine if user is on a merchant-specific page
   const isMerchantPage = ['/dashboard', '/returns', '/settings', '/billing'].includes(location.pathname);
   
-  // Simple check to determine if user is on a merchant dashboard page
-  const isLoggedIn = isMerchantPage;
+  // Use auth context to determine if user is logged in
+  const isLoggedIn = isAuthenticated;
+  
+  // Use merchant name from auth context if available, otherwise use prop
+  const merchantName = user?.storeName || propMerchantName;
   
   return (
     <nav className="bg-white shadow-sm">
@@ -49,25 +54,37 @@ const Navbar = ({ merchantName }: NavbarProps) => {
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* Show Return Request button only for customers or non-logged in users */}
+            {(!isLoggedIn || (user && user.role === 'customer')) && (
+              <Link to="/customer-form" className="mr-4">
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <Package className="h-4 w-4 mr-2" />
+                  Request Return
+                </Button>
+              </Link>
+            )}
+            
             {isLoggedIn ? (
               <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative">
-                      <Bell className="h-5 w-5" />
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                        3
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>New return request from Ana P.</DropdownMenuItem>
-                    <DropdownMenuItem>Return #23492 approved</DropdownMenuItem>
-                    <DropdownMenuItem>Package arrived at warehouse</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {user?.role === 'merchant' && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="relative">
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          3
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>New return request from Ana P.</DropdownMenuItem>
+                      <DropdownMenuItem>Return #23492 approved</DropdownMenuItem>
+                      <DropdownMenuItem>Package arrived at warehouse</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -78,13 +95,19 @@ const Navbar = ({ merchantName }: NavbarProps) => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link to="/settings" className="w-full">Settings</Link>
+                      <Link to={user?.role === 'merchant' ? '/merchant-profile' : '/customer-profile'} className="w-full">
+                        Profile
+                      </Link>
                     </DropdownMenuItem>
+                    {user?.role === 'merchant' && (
+                      <DropdownMenuItem>
+                        <Link to="/settings" className="w-full">Settings</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Link to="/" className="w-full">Logout</Link>
+                    <DropdownMenuItem onClick={logout}>
+                      <span className="w-full">Logout</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -93,7 +116,7 @@ const Navbar = ({ merchantName }: NavbarProps) => {
               <Link to="/login">
                 <Button variant="outline" size="sm" className="flex items-center">
                   <LogIn className="h-4 w-4 mr-2" />
-                  Merchant Login
+                  Login
                 </Button>
               </Link>
             )}
