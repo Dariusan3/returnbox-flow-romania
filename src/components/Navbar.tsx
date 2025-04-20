@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Bell, Menu, User } from 'lucide-react';
+import { Bell, Menu, User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,6 +19,13 @@ interface NavbarProps {
 
 const Navbar = ({ merchantName }: NavbarProps) => {
   const isMobile = useIsMobile();
+  const location = useLocation();
+  
+  // Determine if user is on a merchant-specific page
+  const isMerchantPage = ['/dashboard', '/returns', '/settings', '/billing'].includes(location.pathname);
+  
+  // Simple check to determine if user is on a merchant dashboard page
+  const isLoggedIn = isMerchantPage;
   
   return (
     <nav className="bg-white shadow-sm">
@@ -42,39 +49,54 @@ const Navbar = ({ merchantName }: NavbarProps) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    3
-                  </span>
+            {isLoggedIn ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="relative">
+                      <Bell className="h-5 w-5" />
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        3
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>New return request from Ana P.</DropdownMenuItem>
+                    <DropdownMenuItem>Return #23492 approved</DropdownMenuItem>
+                    <DropdownMenuItem>Package arrived at warehouse</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link to="/settings" className="w-full">Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link to="/" className="w-full">Logout</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Merchant Login
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>New return request from Ana P.</DropdownMenuItem>
-                <DropdownMenuItem>Return #23492 approved</DropdownMenuItem>
-                <DropdownMenuItem>Package arrived at warehouse</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </Link>
+            )}
           </div>
         </div>
       </div>

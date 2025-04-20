@@ -9,7 +9,11 @@ import LoadingSpinner from './ui/LoadingSpinner';
 import { X, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const ReturnForm = () => {
+interface ReturnFormProps {
+  storeName?: string;
+}
+
+const ReturnForm = ({ storeName = "ReturnBox Store" }: ReturnFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -67,7 +71,9 @@ const ReturnForm = () => {
   
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md my-8 animate-fade-in">
-      <h2 className="text-2xl font-semibold mb-6">Request a Return</h2>
+      <h2 className="text-2xl font-semibold mb-6">
+        Request a Return for {storeName}
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="orderNumber">Order Number</Label>

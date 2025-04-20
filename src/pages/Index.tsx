@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Package, BarChart } from 'lucide-react';
+import { ArrowRight, Package, BarChart, LogIn, ShoppingBag } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -18,16 +18,16 @@ const Index = () => {
               The easiest way for Romanian online stores to manage product returns
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-              <Link to="/customer-form">
+              <Link to="/magazinul-meu">
                 <Button className="text-lg px-6 py-6">
                   Request a Return
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Package className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/login">
                 <Button variant="outline" className="text-lg px-6 py-6">
-                  Merchant Dashboard
-                  <BarChart className="ml-2 h-5 w-5" />
+                  Merchant Login
+                  <LogIn className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
@@ -80,24 +80,126 @@ const Index = () => {
         </div>
       </div>
 
-      {/* CTA Section */}
+      {/* User Types Section */}
       <div className="bg-returnbox-soft-gray py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-lg p-8 md:p-12 md:flex md:items-center md:justify-between">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">Choose Your Path</h2>
+            <p className="mt-4 text-xl text-gray-600">ReturnBox serves both customers and merchants</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Customer Path */}
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="flex items-center justify-center w-16 h-16 bg-returnbox-light-blue rounded-full mb-6">
+                <ShoppingBag className="h-8 w-8 text-returnbox-blue" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">For Customers</h3>
+              <p className="text-gray-600 mb-6">
+                Need to return a purchase? Use our simple return form to request a return from any ReturnBox merchant.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">No account required</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">Easy-to-use return form</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">Instant confirmation</p>
+                </div>
+              </div>
+              <div className="mt-8">
+                <Link to="/magazinul-meu">
+                  <Button className="w-full">
+                    Start a Return
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Merchant Path */}
+            <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="flex items-center justify-center w-16 h-16 bg-returnbox-light-blue rounded-full mb-6">
+                <BarChart className="h-8 w-8 text-returnbox-blue" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">For Merchants</h3>
+              <p className="text-gray-600 mb-6">
+                Own an online store? Streamline your return process with our merchant dashboard.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">Customizable return portal</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">Manage all returns in one place</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3 text-gray-600">Detailed analytics</p>
+                </div>
+              </div>
+              <div className="mt-8">
+                <Link to="/register">
+                  <Button variant="outline" className="w-full">
+                    Create Merchant Account
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-returnbox-light-blue rounded-xl shadow-lg p-8 md:p-12 md:flex md:items-center md:justify-between">
             <div className="mb-6 md:mb-0 md:mr-8">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Ready to simplify your returns?</h2>
               <p className="text-gray-600">Join thousands of Romanian online stores using ReturnBox</p>
             </div>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link to="/customer-form">
+              <Link to="/register">
                 <Button className="w-full sm:w-auto">
-                  Request a Return
-                  <Package className="ml-2 h-5 w-5" />
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/dashboard">
                 <Button variant="outline" className="w-full sm:w-auto">
-                  Merchant Login
+                  View Demo
                 </Button>
               </Link>
             </div>
