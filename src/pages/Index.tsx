@@ -59,7 +59,7 @@ const Index = () => {
                   </Button>
                 </Link>
               </div>
-            ) : user.role === 'customer' ? (
+            ) : user && user.role === 'customer' ? (
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
                 {getDashboardLink()}
                 <Link to="/customer-form">
