@@ -20,17 +20,15 @@ const CustomerForm = () => {
     const fetchStoreData = async () => {
       try {
         if (!storeSlug) {
-          // If no storeSlug parameter, redirect to home
           navigate('/');
           return;
         }
 
-        // Fetch merchant by store_slug
+        // Fetch merchant by store_slug FROM the merchants table
         const { data, error } = await supabase
-          .from('profiles')
+          .from('merchants')
           .select('id, store_name')
           .eq('store_slug', storeSlug)
-          .eq('role', 'merchant')
           .single();
 
         if (error || !data) {
@@ -86,3 +84,4 @@ const CustomerForm = () => {
 };
 
 export default CustomerForm;
+
