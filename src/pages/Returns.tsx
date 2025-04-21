@@ -75,6 +75,7 @@ const Returns = () => {
   const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(null);
   const [notes, setNotes] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   
   // Fetch returns for the merchant
   useEffect(() => {
@@ -87,9 +88,14 @@ const Returns = () => {
           .select('*')
           .eq('merchant_id', user.id)
           .order('created_at', { ascending: false });
+
           
         if (error) throw error;
-        setReturns(data || []);
+        const returnsWithOriginalStatus = (data || []).map(item => ({
+          ...item,
+          originalStatus: item.status
+        }));
+        setReturns(returnsWithOriginalStatus);
       } catch (error) {
         console.error('Error fetching returns:', error);
         toast({
@@ -108,27 +114,68 @@ const Returns = () => {
   // Handle status change
   const handleStatusChange = async (returnId: string, newStatus: 'pending' | 'approved' | 'rejected') => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('returns')
         .update({ status: newStatus })
         .eq('id', returnId);
+
+      console.log(returnId);
         
       if (error) throw error;
       
-      // Update local state
+      // Update local state after successful database update
       setReturns(returns.map(item => 
         item.id === returnId ? { ...item, status: newStatus } : item
       ));
+
+      console.log(returns);
+
+      setHasChanges(true); // Set hasChanges to true after status change
       
-      toast({
-        title: 'Status updated',
-        description: `Return request marked as ${newStatus}`,
-      });
+      // toast({
+      //   title: 'Status updated',
+      //   description: 'Return status has been updated successfully',
+      // });
+      
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
         title: 'Update failed',
         description: 'Could not update the return status.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Save all changes
+  const saveChanges = async () => {
+    try {
+      // console.log(returns);
+      for (const item of returns) {
+        const { error } = await supabase
+          .from('returns')
+          .update({ status: item.status })
+          .eq('id', item.id);
+          
+        if (error) throw error;
+      }
+      
+      // Update original status after successful save
+      setReturns(returns.map(item => ({
+        ...item,
+        status: item.status
+      })));
+      setHasChanges(false);
+      
+      toast({
+        title: 'Changes saved',
+        description: 'All status changes have been saved',
+      });
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast({
+        title: 'Save failed',
+        description: 'Could not save the status changes.',
         variant: 'destructive',
       });
     }
@@ -187,6 +234,12 @@ const Returns = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">Return Requests</h1>
+          {hasChanges && (
+            <Button onClick={saveChanges} className="bg-green-600 hover:bg-green-700 text-white">
+              <Check className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          )}
         </div>
         
         {returns.length === 0 ? (

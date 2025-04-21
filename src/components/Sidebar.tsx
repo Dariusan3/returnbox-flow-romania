@@ -1,14 +1,50 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { BarChart, Package, Settings, CreditCard, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
 
 const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [pendingReturns, setPendingReturns] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingReturns = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('returns')
+          .select('*')
+          .eq('merchant_id', user.id)
+          .eq('status', 'pending');
+
+        if (error) throw error;
+        setPendingReturns(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching pending returns:', error);
+      }
+    };
+
+    fetchPendingReturns();
+
+    // Subscribe to changes in the returns table
+    const subscription = supabase
+      .channel('returns_channel')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'returns' },
+        () => fetchPendingReturns()
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
   
   const menuItems = [
     { name: 'Dashboard', icon: <BarChart size={20} />, path: '/dashboard' },
@@ -46,9 +82,9 @@ const Sidebar = () => {
             >
               {item.icon}
               <span>{item.name}</span>
-              {item.name === 'Returns' && (
+              {item.name === 'Returns' && pendingReturns > 0 && (
                 <span className="ml-auto bg-returnbox-blue text-white text-xs px-2 py-1 rounded-full">
-                  5
+                  {pendingReturns}
                 </span>
               )}
             </Link>
