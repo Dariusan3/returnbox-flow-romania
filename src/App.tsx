@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import CustomerReturnForm from "./pages/CustomerReturnForm";
+import CustomerForm from "./pages/CustomerForm";
 import Dashboard from "./pages/Dashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import Returns from "./pages/Returns";
@@ -63,7 +64,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/home" element={<Index />} />
-            <Route path="/:storeName" element={<StoreReturnPage />} />
+            <Route path="/stores/:storeSlug" element={<StoreReturnPage />} />
             
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
@@ -71,7 +72,9 @@ const App = () => (
             <Route path="/auth/email-confirmation" element={<EmailConfirmation />} />
             
             {/* Customer Routes */}
-            <Route path="/customer-form" element={<CustomerReturnForm />} />
+            <Route path="/customer-form/:storeSlug" element={<CustomerForm />} />
+            <Route path="/customer-form" element={<Navigate to="/" />} />
+            <Route path="/return/:storeSlug" element={<CustomerReturnForm />} />
             <Route path="/customer-dashboard" element={<ProtectedRoute element={<CustomerDashboard />} requiredRole="customer" />} />
             
             {/* Protected Merchant Routes */}
