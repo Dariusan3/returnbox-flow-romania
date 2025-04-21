@@ -33,8 +33,9 @@ const ProtectedRoute = ({ element, requiredRole }) => {
     return <Navigate to="/login" />;
   }
   
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to={user.role === 'merchant' ? '/dashboard' : '/customer-dashboard'} />;
+  // Only check role if requiredRole is provided and user exists
+  if (requiredRole && user && user.role !== requiredRole) {
+    return <Navigate to={user?.role === 'merchant' ? '/dashboard' : '/customer-dashboard'} />;
   }
   
   return element;
@@ -48,7 +49,7 @@ const DashboardRedirect = () => {
     return <Navigate to="/login" />;
   }
   
-  return <Navigate to={user.role === 'merchant' ? '/dashboard' : '/customer-dashboard'} />;
+  return <Navigate to={user?.role === 'merchant' ? '/dashboard' : '/customer-dashboard'} />;
 };
 
 const App = () => (
