@@ -23,7 +23,7 @@ import MerchantProfile from "./pages/MerchantProfile";
 import CustomerProfile from "./pages/CustomerProfile";
 import EditProfile from "./pages/profile/EditProfile";
 import EmailConfirmation from "./pages/auth/EmailConfirmation";
-
+import Stores from "./pages/Stores";
 const queryClient = new QueryClient();
 
 // Protected route wrapper component
@@ -72,8 +72,9 @@ const App = () => (
             <Route path="/auth/email-confirmation" element={<EmailConfirmation />} />
             
             {/* Customer Routes */}
+            <Route path="/stores" element={<Stores />} />
             <Route path="/customer-form/:storeSlug" element={<CustomerForm />} />
-            <Route path="/customer-form" element={<Navigate to="/" />} />
+            {/* <Route path="/customer-form" element={<Navigate to="/" />} /> */}
             <Route path="/return/:storeSlug" element={<CustomerReturnForm />} />
             <Route path="/customer-dashboard" element={<ProtectedRoute element={<CustomerDashboard />} requiredRole="customer" />} />
             

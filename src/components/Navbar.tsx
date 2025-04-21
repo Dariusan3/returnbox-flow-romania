@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Bell, Menu, User, LogIn, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import {Navigate} from 'react-router-dom';
 
 interface NavbarProps {
   merchantName?: string;
@@ -22,7 +23,14 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
   const isMobile = useIsMobile();
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   
+  const handleReturnClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      navigate('/login?role=customer&redirect=/customer-form');
+    }
+  };
   // Determine if user is on a merchant-specific page
   const isMerchantPage = ['/dashboard', '/returns', '/settings', '/billing'].includes(location.pathname);
   
@@ -56,7 +64,7 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
           <div className="flex items-center space-x-4">
             {/* Show Return Request button only for customers or non-logged in users */}
             {(!isLoggedIn || (user && user.role === 'customer')) && (
-              <Link to="/customer-form" className="mr-4">
+              <Link to="/stores" onClick={handleReturnClick}>
                 <Button variant="outline" size="sm" className="flex items-center">
                   <Package className="h-4 w-4 mr-2" />
                   Request Return

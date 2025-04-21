@@ -28,7 +28,7 @@ const CustomerForm = () => {
 
         // First try with the exact slug
         let { data, error } = await supabase
-          .from('merchants')
+          .from('profiles')
           .select('id, store_name')
           .eq('store_slug', storeSlug)
           .single();

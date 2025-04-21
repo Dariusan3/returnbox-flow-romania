@@ -29,7 +29,7 @@ const CustomerDashboard = () => {
       <div className="space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">My Returns</h1>
-          <Link to="/customer-form" onClick={handleReturnClick}>
+          <Link to="/stores" onClick={handleReturnClick}>
             <Button>
               <Package className="mr-2 h-4 w-4" />
               Request New Return

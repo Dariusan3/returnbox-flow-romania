@@ -147,7 +147,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: { role } // Add role to user metadata
-          // Removed email confirmation redirect!
         }
       });
 
@@ -162,18 +161,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: authUser.id,
             email,
             role,
-            website: profile.website || '',
-            business_address: profile.business_address || '',
+            website: profile.website || null,
+            business_address: profile.business_address || null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            store_name: profile.store_name || '',
-            store_logo: profile.store_logo || '',
-            first_name: profile.first_name || '',
-            last_name: profile.last_name || '',
-            phone: profile.phone || '',
-            address: profile.address || ''
+            store_name: role === 'merchant' ? profile.store_name || null : null,
+            store_logo: role === 'merchant' ? profile.store_logo || null : null,
+            first_name: profile.first_name || null,
+            last_name: profile.last_name || null,
+            phone: profile.phone || null,
+            address: profile.address || null
           },
         ]);
+
 
       if (profileError) {
         // If profile creation fails, we should delete the auth user

@@ -164,7 +164,7 @@ const ReturnForm = ({ storeName, merchantId }: ReturnFormProps) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
-      <h2 className="text-2xl font-bold mb-6">Submit a Return Request</h2>
+      <h2 className="text-2xl font-bold mb-6">Submit a Return Request for {storeName}</h2>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

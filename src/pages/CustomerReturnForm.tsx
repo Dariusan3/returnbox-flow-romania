@@ -28,7 +28,7 @@ const CustomerReturnForm = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, store_name')
-          .eq('store_slug', storeSlug)
+          .eq('store_name', storeSlug)
           .eq('role', 'merchant')
           .single();
         if (error || !data) {
@@ -67,7 +67,7 @@ const CustomerReturnForm = () => {
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h2 className="text-2xl font-bold mb-4">Please sign in to request a return</h2>
-          <p className="mb-6 text-gray-600">You need to be logged in as a customer to submit a return request.</p>
+          <p className="mb-6 text-gray-600">You need to be logged in as a customer to submit a return request for.</p>
           <Button onClick={() => navigate('/login?role=customer')}>Sign in as Customer</Button>
         </div>
       </Layout>

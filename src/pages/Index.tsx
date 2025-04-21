@@ -32,12 +32,14 @@ const Index = () => {
     );
   };
 
+ 
   const handleReturnClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault();
       navigate('/login?role=customer&redirect=/customer-form');
     }
   };
+  
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -69,7 +71,7 @@ const Index = () => {
             ) : user && user.role === 'customer' ? (
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
                 {getDashboardLink()}
-                <Link to="/customer-form">
+                <Link to="/stores" onClick={handleReturnClick}>
                   <Button variant="outline" className="text-lg px-6 py-6">
                     New Return Request
                     <Package className="ml-2 h-5 w-5" />

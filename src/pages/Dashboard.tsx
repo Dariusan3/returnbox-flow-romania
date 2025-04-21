@@ -1,12 +1,91 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Package, CreditCard, Users } from 'lucide-react';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+
+interface DashboardStats {
+  totalReturns: number;
+  pendingReturns: number;
+  revenueImpact: number;
+  totalCustomers: number;
+}
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalReturns: 0,
+    pendingReturns: 0,
+    revenueImpact: 0,
+    totalCustomers: 0
+  });
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      if (!user) return;
+
+      try {
+        // Fetch total returns
+        const { data: returnsData, error: returnsError } = await supabase
+          .from('returns')
+          .select('id, status')
+          .eq('merchant_id', user.id);
+
+        if (returnsError) throw returnsError;
+
+        // Calculate stats
+        const totalReturns = returnsData?.length || 0;
+        const pendingReturns = returnsData?.filter(r => r.status === 'pending').length || 0;
+
+        // Fetch unique customers
+        const { data: customersData, error: customersError } = await supabase
+          .from('returns')
+          .select('customer_email')
+          .eq('merchant_id', user.id);
+
+        if (customersError) throw customersError;
+
+        const uniqueCustomers = new Set(customersData?.map(r => r.customer_email));
+
+        setStats({
+          totalReturns,
+          pendingReturns,
+          revenueImpact: totalReturns * 50, // Assuming average return value of $50
+          totalCustomers: uniqueCustomers.size
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load dashboard statistics.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [user, toast]);
+
+  if (loading) {
+    return (
+      <Layout showSidebar merchantName={user?.store_name}>
+        <div className="flex items-center justify-center h-64">
+          <LoadingSpinner />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout showSidebar merchantName="Maria's Fashion Store">
+    <Layout showSidebar merchantName={user?.store_name}>
       <div className="space-y-6 animate-fade-in">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -16,8 +95,8 @@ const Dashboard = () => {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">25</div>
-              <p className="text-xs text-muted-foreground">+5% from last month</p>
+              <div className="text-2xl font-bold">{stats.totalReturns}</div>
+              <p className="text-xs text-muted-foreground">All time returns</p>
             </CardContent>
           </Card>
           
@@ -27,7 +106,7 @@ const Dashboard = () => {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$1,250</div>
+              <div className="text-2xl font-bold">${stats.revenueImpact}</div>
               <p className="text-xs text-muted-foreground">Return-related revenue</p>
             </CardContent>
           </Card>
@@ -38,7 +117,7 @@ const Dashboard = () => {
               <BarChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5</div>
+              <div className="text-2xl font-bold">{stats.pendingReturns}</div>
               <p className="text-xs text-muted-foreground">Awaiting processing</p>
             </CardContent>
           </Card>
@@ -49,8 +128,8 @@ const Dashboard = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">120</div>
-              <p className="text-xs text-muted-foreground">Total active customers</p>
+              <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+              <p className="text-xs text-muted-foreground">Unique customers</p>
             </CardContent>
           </Card>
         </div>
