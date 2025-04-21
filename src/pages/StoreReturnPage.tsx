@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import ReturnForm from '@/components/ReturnForm';
 import { useToast } from '@/hooks/use-toast';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+// Fix import of LoadingSpinner from default export.
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface StoreData {
   id: string;
