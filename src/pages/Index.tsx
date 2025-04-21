@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useEffect } from'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,13 @@ import Navbar from '@/components/Navbar';
 const Index = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  
+  // Check if merchant needs to set up their store
+  useEffect(() => {
+    if (isAuthenticated && user && user.role === 'merchant' && !user.store_name) {
+      navigate('/merchant-setup');
+    }
+  }, [isAuthenticated, user, navigate]);
   
   // Add navigation buttons for authenticated users
   const getDashboardLink = () => {

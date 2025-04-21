@@ -1,169 +1,308 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import LoadingSpinner from './ui/LoadingSpinner';
-import { X, Upload } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Upload, Package, Check } from 'lucide-react';
+
+const formSchema = z.object({
+  orderId: z.string().min(3, {
+    message: "Order ID must be at least 3 characters.",
+  }),
+  productName: z.string().min(3, {
+    message: "Product name must be at least 3 characters.",
+  }),
+  reason: z.string().min(10, {
+    message: "Please provide a more detailed reason for the return.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+});
 
 interface ReturnFormProps {
-  storeName?: string;
+  storeName: string;
+  merchantId: string;
 }
 
-const ReturnForm = ({ storeName = "ReturnBox Store" }: ReturnFormProps) => {
+const ReturnForm = ({ storeName, merchantId }: ReturnFormProps) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // Initialize form with default values
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      orderId: "",
+      productName: "",
+      reason: "",
+      email: user?.email || "",
+    },
+  });
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      return;
+    }
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      toast({
-        title: "Return request submitted",
-        description: "You'll receive a confirmation email shortly.",
-      });
-    }, 1500);
+    const file = event.target.files[0];
+    setPhotoFile(file);
+    
+    // Create a preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
-  
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setUploadedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!photoFile) return null;
+    
+    const fileExt = photoFile.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const filePath = `return-photos/${fileName}`;
+    
+    try {
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('returns')
+        .upload(filePath, photoFile);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('returns')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      return null;
     }
   };
-  
-  const removeImage = () => {
-    setUploadedImage(null);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setSubmitting(true);
+    
+    try {
+      // Upload photo if exists
+      const photoUrl = await uploadPhoto();
+      
+      // Save return request to Supabase
+      const { error } = await supabase
+        .from('returns')
+        .insert([
+          {
+            merchant_id: merchantId,
+            order_id: values.orderId,
+            product_name: values.productName,
+            reason: values.reason,
+            customer_email: values.email,
+            photo_url: photoUrl,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+        ]);
+        
+      if (error) throw error;
+      
+      setSubmitted(true);
+      toast({
+        title: 'Return request submitted',
+        description: 'Your return request has been sent to the merchant.',
+      });
+    } catch (error) {
+      console.error('Error submitting return request:', error);
+      toast({
+        title: 'Submission failed',
+        description: 'There was a problem submitting your return request.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
-  
+
   if (submitted) {
     return (
-      <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md my-8 animate-fade-in">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-800 mb-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-semibold mb-2">Return Request Submitted</h2>
-          <p className="text-gray-600 mb-6">
-            Your return request has been submitted successfully. You'll receive a confirmation email with further instructions.
-          </p>
-          <p className="text-sm text-gray-500 mb-4">Return ID: #RT45678</p>
-          <Button onClick={() => setSubmitted(false)}>Submit Another Return</Button>
+      <div className="bg-white rounded-lg shadow-md p-8 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Check className="h-8 w-8 text-green-600" />
         </div>
+        <h2 className="text-2xl font-bold mb-4">Return Request Submitted</h2>
+        <p className="text-gray-600 mb-6">
+          Your return request has been sent to {storeName}. They will review it and get back to you soon.
+        </p>
+        <Button onClick={() => setSubmitted(false)}>Submit Another Return</Button>
       </div>
     );
   }
-  
+
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md my-8 animate-fade-in">
-      <h2 className="text-2xl font-semibold mb-6">
-        Request a Return for {storeName}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="orderNumber">Order Number</Label>
-          <Input id="orderNumber" placeholder="e.g. 123456" required />
-        </div>
-        
-        <div>
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" placeholder="Your full name" required />
-        </div>
-        
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="your@email.com" required />
-        </div>
-        
-        <div>
-          <Label htmlFor="productName">Product Name</Label>
-          <Input id="productName" placeholder="e.g. Blue T-Shirt" required />
-        </div>
-        
-        <div>
-          <Label htmlFor="reason">Reason for Return</Label>
-          <Select required>
-            <SelectTrigger>
-              <SelectValue placeholder="Select reason" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="size">Size Issue</SelectItem>
-              <SelectItem value="damaged">Damaged</SelectItem>
-              <SelectItem value="changed_mind">Changed Mind</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Label htmlFor="details">Additional Details</Label>
-          <Textarea id="details" placeholder="Provide more information about your return" />
-        </div>
-        
-        <div>
-          <Label htmlFor="photo">Upload Photo (optional)</Label>
-          <div className="mt-1">
-            {uploadedImage ? (
-              <div className="relative inline-block">
-                <img 
-                  src={uploadedImage} 
-                  alt="Uploaded" 
-                  className="w-32 h-32 object-cover rounded-lg border" 
-                />
-                <button 
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute -top-2 -right-2 bg-white p-1 rounded-full shadow-md"
-                >
-                  <X className="h-4 w-4 text-gray-500" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6">
-                <label className="flex flex-col items-center cursor-pointer">
-                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-500">Click to upload</span>
-                  <input 
-                    type="file" 
-                    id="photo" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={handleImageUpload}
-                  />
-                </label>
-              </div>
+    <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+      <h2 className="text-2xl font-bold mb-6">Submit a Return Request</h2>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Order ID */}
+          <FormField
+            control={form.control}
+            name="orderId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Order ID</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your order number" {...field} />
+                </FormControl>
+                <FormDescription>
+                  This can be found on your order confirmation email.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
             )}
+          />
+          
+          {/* Product Name */}
+          <FormField
+            control={form.control}
+            name="productName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter the product name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Return Reason */}
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reason for Return</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Please explain why you're returning this item"
+                    className="min-h-[120px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Email */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="email"
+                    placeholder="your@email.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Photo Upload (Optional) */}
+          <div className="space-y-2">
+            <FormLabel>Upload Photo (Optional)</FormLabel>
+            <div className="flex items-center space-x-4">
+              {photoPreview ? (
+                <div className="relative">
+                  <img 
+                    src={photoPreview}
+                    alt="Product preview"
+                    className="h-24 w-24 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
+                    onClick={() => {
+                      setPhotoFile(null);
+                      setPhotoPreview(null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer">
+                    <Upload className="h-8 w-8 text-gray-400" />
+                    <span className="text-xs text-gray-500 mt-1">Add photo</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={handlePhotoChange}
+                  />
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">
+                  Upload a photo of the product you're returning (optional).
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <LoadingSpinner size="sm" className="mr-2" />
-              Processing...
-            </>
-          ) : "Request Return"}
-        </Button>
-      </form>
+          
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <LoadingSpinner className="mr-2" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Package className="mr-2 h-4 w-4" />
+                Submit Return Request
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };

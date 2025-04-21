@@ -2,10 +2,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BarChart, Package, Settings, CreditCard } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { BarChart, Package, Settings, CreditCard, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Sidebar = () => {
   const location = useLocation();
+  const { user, logout } = useAuth();
   
   const menuItems = [
     { name: 'Dashboard', icon: <BarChart size={20} />, path: '/dashboard' },
@@ -13,6 +16,15 @@ const Sidebar = () => {
     { name: 'Settings', icon: <Settings size={20} />, path: '/settings' },
     { name: 'Billing', icon: <CreditCard size={20} />, path: '/billing' },
   ];
+  
+  const initials = user?.store_name
+    ? user.store_name.substring(0, 2).toUpperCase()
+    : 'ST';
+  
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/';
+  };
   
   return (
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-full pt-5">
@@ -44,15 +56,32 @@ const Sidebar = () => {
         </div>
       </div>
       <div className="mt-auto p-4 border-t">
-        <div className="flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-full bg-returnbox-light-blue flex items-center justify-center text-returnbox-blue font-medium">
-            MS
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="h-9 w-9 rounded-full bg-returnbox-light-blue flex items-center justify-center text-returnbox-blue font-medium overflow-hidden">
+            {user?.store_logo ? (
+              <img 
+                src={user.store_logo} 
+                alt={user.store_name || 'Store'}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
           </div>
           <div>
-            <p className="text-sm font-medium">Maria Shop</p>
-            <p className="text-xs text-gray-500">Administrator</p>
+            <p className="text-sm font-medium">{user?.store_name || 'Your Store'}</p>
+            <p className="text-xs text-gray-500">Merchant</p>
           </div>
         </div>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="w-full justify-start"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Log Out
+        </Button>
       </div>
     </aside>
   );
