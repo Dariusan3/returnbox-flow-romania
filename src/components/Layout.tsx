@@ -15,7 +15,7 @@ const Layout = ({ children, showSidebar = false, merchantName }: LayoutProps) =>
   const { user } = useAuth();
   
   // Use merchant name from auth context if available, otherwise use prop
-  const displayMerchantName = user?.role === 'merchant' ? user.storeName : merchantName;
+  const displayMerchantName = user?.role === 'merchant' ? user.store_name : merchantName;
   
   return (
     <div className="min-h-screen bg-returnbox-soft-gray flex flex-col">

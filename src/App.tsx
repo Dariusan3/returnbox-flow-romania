@@ -21,6 +21,7 @@ import { useEffect } from "react";
 import MerchantProfile from "./pages/MerchantProfile";
 import CustomerProfile from "./pages/CustomerProfile";
 import EditProfile from "./pages/profile/EditProfile";
+import EmailConfirmation from "./pages/auth/EmailConfirmation";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const App = () => (
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/email-confirmation" element={<EmailConfirmation />} />
             
             {/* Customer Routes */}
             <Route path="/customer-form" element={<CustomerReturnForm />} />

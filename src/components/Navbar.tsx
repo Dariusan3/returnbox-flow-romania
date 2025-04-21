@@ -30,7 +30,7 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
   const isLoggedIn = isAuthenticated;
   
   // Use merchant name from auth context if available, otherwise use prop
-  const merchantName = user?.storeName || propMerchantName;
+  const merchantName = user?.store_name || propMerchantName;
   
   return (
     <nav className="bg-white shadow-sm">

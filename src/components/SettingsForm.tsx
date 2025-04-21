@@ -15,8 +15,8 @@ const SettingsForm = () => {
   
   // Use logo from auth context if available
   React.useEffect(() => {
-    if (user?.storeLogo) {
-      setUploadedLogo(user.storeLogo);
+    if (user?.store_logo) {
+      setUploadedLogo(user.store_logo);
     }
   }, [user]);
   
@@ -104,7 +104,7 @@ const SettingsForm = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Business Name</label>
-            <Input placeholder="Your business name" defaultValue={user?.storeName || ""} />
+            <Input placeholder="Your business name" defaultValue={user?.store_name || ""} />
           </div>
           
           <div className="space-y-2">

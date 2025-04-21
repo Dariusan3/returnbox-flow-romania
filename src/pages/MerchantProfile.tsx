@@ -26,7 +26,7 @@ const MerchantProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-500">Store Name</label>
-                <p className="text-lg font-medium">{user?.storeName}</p>
+                <p className="text-lg font-medium">{user?.store_name}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-500">Website</label>
@@ -39,7 +39,7 @@ const MerchantProfile = () => {
                 <label className="text-sm text-gray-500">Business Address</label>
                 <p className="text-lg font-medium flex items-center gap-2">
                   <Building className="h-4 w-4" />
-                  {user?.businessAddress || 'Not provided'}
+                  {user?.business_address || 'Not provided'}
                 </p>
               </div>
               <div>

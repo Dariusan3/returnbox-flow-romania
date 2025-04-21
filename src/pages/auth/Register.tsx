@@ -17,7 +17,8 @@ const Register = () => {
   const [password, setPassword] = useState('');
   
   // Customer fields
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   
@@ -47,7 +48,7 @@ const Register = () => {
   }, [location]);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
@@ -62,43 +63,40 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Store registration data before login
     try {
-      if (email.includes('@') && password.length >= 6) {
-        const userData = selectedRole === 'customer' ? {
-          name: fullName,
-          phone,
-          address
-        } : {
-          storeName,
-          website,
-          businessAddress
-        };
+      if (!email.includes('@') || password.length < 6) {
+        throw new Error('Invalid email or password');
+      }
 
-        // Store registration data temporarily
-        localStorage.setItem('registration_data', JSON.stringify(userData));
+      const userData = selectedRole === 'customer' ? {
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        address
+      } : {
+        store_name: storeName,
+        website,
+        business_address: businessAddress
+      };
 
-        // Use the login function from AuthContext to set the user with the selected role
-        await login(email, password, selectedRole);
-        
+      const success = await register(email, password, selectedRole, userData);
+      
+      if (success) {
         toast({
           title: "Registration successful",
-          description: `Your ${selectedRole} account has been created`,
+          description: "Please check your email to verify your account.",
         });
-        navigate(selectedRole === 'merchant' ? '/dashboard' : '/customer-dashboard');
+        // Navigate to email confirmation page with necessary data
+        navigate('/email-confirmation', {
+          state: { email, password, role: selectedRole }
+        });
       } else {
-        toast({
-          title: "Registration failed",
-          description: "Please check your information and try again",
-          variant: "destructive",
-        });
+        throw new Error('Registration failed');
       }
-      setIsLoading(false);
-    }
-    catch (error) {
+    } catch (error) {
       toast({
         title: "Registration failed",
-        description: "Please check your information and try again",
+        description: error instanceof Error ? error.message : "Please check your information and try again",
         variant: "destructive",
       });
     } finally {
@@ -194,17 +192,32 @@ const Register = () => {
               {selectedRole === 'customer' ? (
                 // Customer registration fields
                 <>
-                  <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <div className="mt-1">
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        required
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                      />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <div className="mt-1">
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          type="text"
+                          required
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <div className="mt-1">
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          type="text"
+                          required
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
 

@@ -43,7 +43,7 @@ const EditProfile = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Store Name</label>
                     <Input
-                      defaultValue={user?.storeName}
+                      defaultValue={user?.store_name}
                       placeholder="Enter store name"
                     />
                   </div>
@@ -57,7 +57,7 @@ const EditProfile = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Business Address</label>
                     <Input
-                      defaultValue={user?.businessAddress}
+                      defaultValue={user?.business_address}
                       placeholder="Enter business address"
                     />
                   </div>

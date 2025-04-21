@@ -14,14 +14,15 @@ const EditProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Customer fields
-  const [fullName, setFullName] = useState(user?.name || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [address, setAddress] = useState(user?.address || '');
+  const [firstName, setFirstName] = useState<string>(user?.first_name || '');
+  const [lastName, setLastName] = useState<string>(user?.last_name || '');
+  const [phone, setPhone] = useState<string>(user?.phone || '');
+  const [address, setAddress] = useState<string>(user?.address || '');
 
   // Merchant fields
-  const [storeName, setStoreName] = useState(user?.storeName || '');
-  const [website, setWebsite] = useState(user?.website || '');
-  const [businessAddress, setBusinessAddress] = useState(user?.businessAddress || '');
+  const [storeName, setStoreName] = useState<string>(user?.store_name || '');
+  const [website, setWebsite] = useState<string>(user?.website || '');
+  const [businessAddress, setBusinessAddress] = useState<string>(user?.business_address || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,13 +30,14 @@ const EditProfile = () => {
 
     try {
       const profileData = user?.role === 'customer' ? {
-        name: fullName,
+        first_name: firstName,
+        last_name: lastName,
         phone,
         address
       } : {
-        storeName,
+        store_name: storeName,
         website,
-        businessAddress
+        business_address: businessAddress
       };
 
       await updateProfile(profileData);
@@ -80,15 +82,29 @@ const EditProfile = () => {
               // Customer profile fields
               <>
                 <div>
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="firstName">First Name</Label>
                   <div className="mt-1">
                     <Input
-                      id="fullName"
-                      name="fullName"
+                      id="firstName"
+                      name="firstName"
                       type="text"
                       required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <div className="mt-1">
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                     />
                   </div>
                 </div>
