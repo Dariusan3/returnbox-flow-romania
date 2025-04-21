@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import ReturnForm from '@/components/ReturnForm';
 import { useToast } from '@/hooks/use-toast';
-// Fix import of LoadingSpinner from default export.
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface StoreData {
@@ -21,24 +21,66 @@ const StoreReturnPage = () => {
   useEffect(() => {
     const fetchStoreData = async () => {
       try {
-        // Find merchant by store slug
-        const { data, error } = await supabase
+        if (!storeSlug) {
+          throw new Error('No store slug provided');
+        }
+
+        console.log('Fetching store with slug:', storeSlug);
+        
+        // Try exact match first
+        let { data, error } = await supabase
           .from('profiles')
           .select('id, store_name, store_logo')
           .eq('store_slug', storeSlug)
           .eq('role', 'merchant')
           .single();
-          
+        
+        // If not found, try case-insensitive search
         if (error || !data) {
-          throw new Error('Store not found');
+          console.log('Exact slug not found, trying case-insensitive search');
+          const { data: allStores, error: storeError } = await supabase
+            .from('profiles')
+            .select('id, store_name, store_logo, store_slug')
+            .eq('role', 'merchant');
+            
+          if (!storeError && allStores) {
+            // Find a match ignoring case
+            const store = allStores.find(s => 
+              s.store_slug && s.store_slug.toLowerCase() === storeSlug.toLowerCase()
+            );
+            
+            if (store) {
+              data = store;
+              error = null;
+            }
+          }
         }
         
+        // As a last resort, try to match by store name
+        if (error || !data) {
+          console.log('Trying to match by store name...');
+          const { data: nameData, error: nameError } = await supabase
+            .from('profiles')
+            .select('id, store_name, store_logo')
+            .ilike('store_name', `%${storeSlug}%`)
+            .eq('role', 'merchant')
+            .single();
+            
+          if (!nameError && nameData) {
+            data = nameData;
+            error = null;
+          } else {
+            throw new Error('Store not found');
+          }
+        }
+        
+        console.log('Found store:', data);
         setStoreData(data);
       } catch (error) {
         console.error('Error fetching store data:', error);
         toast({
           title: 'Store not found',
-          description: 'We could not find the store you are looking for.',
+          description: 'We could not find the store you are looking for. Please check the URL and try again.',
           variant: 'destructive',
         });
       } finally {
@@ -48,6 +90,8 @@ const StoreReturnPage = () => {
     
     if (storeSlug) {
       fetchStoreData();
+    } else {
+      setLoading(false);
     }
   }, [storeSlug, toast]);
   

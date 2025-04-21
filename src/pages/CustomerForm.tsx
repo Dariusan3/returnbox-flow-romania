@@ -24,24 +24,60 @@ const CustomerForm = () => {
           return;
         }
 
-        // Fetch merchant by store_slug FROM the merchants table
-        const { data, error } = await supabase
+        console.log('Fetching store with slug:', storeSlug);
+
+        // First try with the exact slug
+        let { data, error } = await supabase
           .from('merchants')
           .select('id, store_name')
           .eq('store_slug', storeSlug)
           .single();
 
+        // If not found, try case-insensitive search
         if (error || !data) {
-          throw new Error('Store not found');
+          console.log('Exact slug not found, trying case-insensitive search');
+          const { data: allMerchants, error: merchError } = await supabase
+            .from('merchants')
+            .select('id, store_name, store_slug');
+            
+          if (!merchError && allMerchants) {
+            // Find a match ignoring case
+            const merchant = allMerchants.find(m => 
+              m.store_slug && m.store_slug.toLowerCase() === storeSlug.toLowerCase()
+            );
+            
+            if (merchant) {
+              data = merchant;
+              error = null;
+            }
+          }
         }
 
+        if (error || !data) {
+          // As a fallback, try to match by store name
+          console.log('Trying to match by store name...');
+          const { data: storeData, error: storeError } = await supabase
+            .from('merchants')
+            .select('id, store_name')
+            .ilike('store_name', `%${storeSlug}%`)
+            .single();
+            
+          if (!storeError && storeData) {
+            data = storeData;
+            error = null;
+          } else {
+            throw new Error('Store not found');
+          }
+        }
+
+        console.log('Found store:', data);
         setMerchantId(data.id);
         setStoreName(data.store_name || 'Store');
       } catch (error) {
         console.error('Error fetching store data:', error);
         toast({
           title: 'Store not found',
-          description: 'We could not find the store you are looking for.',
+          description: 'We could not find the store you are looking for. Please check the URL and try again.',
           variant: 'destructive',
         });
       } finally {
@@ -84,4 +120,3 @@ const CustomerForm = () => {
 };
 
 export default CustomerForm;
-
