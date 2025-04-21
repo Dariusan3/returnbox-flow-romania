@@ -146,8 +146,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: { role }, // Add role to user metadata
-          emailRedirectTo: `${window.location.origin}/auth/email-confirmation?role=${role}` // Add email redirect
+          data: { role } // Add role to user metadata
+          // Removed email confirmation redirect!
         }
       });
 
@@ -181,12 +181,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw profileError;
       }
 
-      // After successful registration, navigate to email confirmation page
+      // After successful registration, set session, update authenticated state and fetch profile
       if (session) {
         setSession(session);
         setIsAuthenticated(true);
         await fetchProfile(authUser.id);
-        window.location.href = `/auth/email-confirmation?role=${role}`;
       }
 
       return true;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,7 @@ const Register = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       if (!email.includes('@') || password.length < 6) {
         throw new Error('Invalid email or password');
@@ -80,16 +79,14 @@ const Register = () => {
       };
 
       const success = await register(email, password, selectedRole, userData);
-      
+
       if (success) {
         toast({
           title: "Registration successful",
-          description: "Please check your email to verify your account.",
+          description: "You have been registered and logged in!",
         });
-        // Navigate to email confirmation page with necessary data
-        navigate('/email-confirmation', {
-          state: { email, password, role: selectedRole }
-        });
+        // DIRECTLY navigate to dashboard depending on role
+        navigate(selectedRole === 'merchant' ? '/dashboard' : '/customer-dashboard');
       } else {
         throw new Error('Registration failed');
       }
