@@ -164,7 +164,7 @@ const CustomerDashboard = () => {
             {!loading && returns.length === 0 && (
               <div className="text-center py-6">
                 <p className="text-muted-foreground">You haven't made any return requests yet.</p>
-                <Link to="/customer-form" onClick={handleReturnClick} className="mt-2 inline-block">
+                <Link to="/stores" onClick={handleReturnClick} className="mt-2 inline-block">
                   <Button variant="outline" size="sm">
                     Request a Return
                   </Button>
