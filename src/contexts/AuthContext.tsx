@@ -32,27 +32,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-    });
+    // Get initial session and set up auth state change listener
+    const initializeAuth = async () => {
+      try {
+        // Get the initial session
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (initialSession) {
+          setSession(initialSession);
+          setIsAuthenticated(true);
+          await fetchProfile(initialSession.user.id);
+        }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setIsAuthenticated(!!session);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setUser(null);
-      }
-    });
+        // Set up auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+          setSession(session);
+          setIsAuthenticated(!!session);
+          
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        });
 
-    return () => subscription.unsubscribe();
+        return () => subscription.unsubscribe();
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const fetchProfile = async (userId: string) => {
@@ -72,27 +84,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string, role: 'customer' | 'merchant') => {
     try {
-      const { data: { user: authUser }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // Attempt to sign in and get profile in parallel
+      const signInPromise = supabase.auth.signInWithPassword({ email, password });
+      
+      const { data: { user: authUser }, error } = await signInPromise;
 
       if (error) throw error;
+      if (!authUser) return false;
 
-      if (authUser) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authUser.id)
-          .single();
+      // Get profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, first_name, last_name, email, store_name, store_logo')
+        .eq('id', authUser.id)
+        .single();
 
-        // Verify role matches
-        if (profile && profile.role === role) {
-          return true;
-        }
+      // Verify role matches and set user data
+      if (profile && profile.role === role) {
+        //setUser(profile);
+        return true;
       }
 
-      // If we get here, either the user doesn't exist or role doesn't match
+      // Role mismatch - sign out
       await supabase.auth.signOut();
       return false;
     } catch (error) {

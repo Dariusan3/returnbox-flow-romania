@@ -11,8 +11,91 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      pickups: {
+        Row: {
+          id: string
+          user_id: string
+          return_id: string
+          pickup_date: string
+          time_slot: 'morning' | 'afternoon' | 'evening'
+          address: string
+          city: string
+          postal_code: string
+          package_size: 'small' | 'medium' | 'large'
+          courier_tracking_number: string | null
+          notes: string | null
+          status: 'pending' | 'scheduled' | 'completed' | 'cancelled'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          return_id: string
+          pickup_date: string
+          time_slot: 'morning' | 'afternoon' | 'evening'
+          address: string
+          city: string
+          postal_code: string
+          package_size: 'small' | 'medium' | 'large'
+          courier_tracking_number?: string | null
+          notes?: string | null
+          status?: 'pending' | 'scheduled' | 'completed' | 'cancelled'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          return_id?: string
+          pickup_date?: string
+          time_slot?: 'morning' | 'afternoon' | 'evening'
+          address?: string
+          city?: string
+          postal_code?: string
+          package_size?: 'small' | 'medium' | 'large'
+          courier_tracking_number?: string | null
+          notes?: string | null
+          status?: 'pending' | 'scheduled' | 'completed' | 'cancelled'
+          created_at?: string
+          updated_at?: string
+        }
+      },
+      refund_policies: {
+        Row: {
+          description: any
+          item_condition: string
+          id: string
+          merchant_id: string
+          condition_description: string
+          refund_percentage: number
+          processing_time_days: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          merchant_id: string
+          condition_description: string
+          refund_percentage: number
+          processing_time_days?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          merchant_id?: string
+          condition_description?: string
+          refund_percentage?: number
+          processing_time_days?: number
+          created_at?: string
+          updated_at?: string
+        }
+      },
       profiles: {
         Row: {
+          postal_code: string
+          city: string
           website: string
           business_address: string
           name: string

@@ -31,6 +31,12 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
       navigate('/login?role=customer&redirect=/customer-form');
     }
   };
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/';
+  };
+
   // Determine if user is on a merchant-specific page
   const isMerchantPage = ['/dashboard', '/returns', '/settings', '/billing'].includes(location.pathname);
   
@@ -68,6 +74,13 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
                 <Button variant="outline" size="sm" className="flex items-center">
                   <Package className="h-4 w-4 mr-2" />
                   Request Return
+                </Button>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Link to={user?.role === 'merchant' ? '/dashboard' : '/customer-dashboard'}>
+                <Button variant="ghost" size="sm" className="flex items-center">
+                  Dashboard
                 </Button>
               </Link>
             )}
@@ -114,7 +127,7 @@ const Navbar = ({ merchantName: propMerchantName }: NavbarProps) => {
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
+                    <DropdownMenuItem onClick={handleLogout}>
                       <span className="w-full">Logout</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

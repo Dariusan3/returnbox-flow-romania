@@ -10,6 +10,85 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      pickups: {
+        Row: {
+          id: string
+          user_id: string
+          return_id: string
+          pickup_date: string
+          time_slot: 'morning' | 'afternoon' | 'evening'
+          address: string
+          city: string
+          postal_code: string
+          package_size: 'small' | 'medium' | 'large'
+          status: 'scheduled' | 'picked_up' | 'cancelled'
+          courier_tracking_number?: string
+          notes?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          return_id: string
+          pickup_date: string
+          time_slot: 'morning' | 'afternoon' | 'evening'
+          address: string
+          city: string
+          postal_code: string
+          package_size: 'small' | 'medium' | 'large'
+          status?: 'scheduled' | 'picked_up' | 'cancelled'
+          courier_tracking_number?: string
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          return_id?: string
+          pickup_date?: string
+          time_slot?: 'morning' | 'afternoon' | 'evening'
+          address?: string
+          city?: string
+          postal_code?: string
+          package_size?: 'small' | 'medium' | 'large'
+          status?: 'scheduled' | 'picked_up' | 'cancelled'
+          courier_tracking_number?: string
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      refund_policies: {
+        Row: {
+          id: string
+          merchant_id: string
+          item_condition: 'sealed' | 'opened' | 'defective'
+          refund_percentage: number
+          description?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          merchant_id: string
+          item_condition: 'sealed' | 'opened' | 'defective'
+          refund_percentage: number
+          description?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          merchant_id?: string
+          item_condition?: 'sealed' | 'opened' | 'defective'
+          refund_percentage?: number
+          description?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
       profiles: {
         Row: {
           id: string

@@ -29,10 +29,12 @@ const queryClient = new QueryClient();
 // Protected route wrapper component
 const ProtectedRoute = ({ element, requiredRole }) => {
   const { user, isAuthenticated } = useAuth();
+  console.log(user);
+  console.log(isAuthenticated);
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" />;
+  // }
   
   // Only check role if requiredRole is provided and user exists
   if (requiredRole && user && user.role !== requiredRole) {

@@ -22,7 +22,7 @@ const Layout = ({ children, showSidebar = false, merchantName }: LayoutProps) =>
       <Navbar merchantName={displayMerchantName} />
       <div className="flex flex-1">
         {showSidebar && <Sidebar />}
-        <main className={cn("flex-1 p-4 md:p-6", showSidebar ? "ml-0 md:ml-64" : "")}>
+        <main className={cn("flex-1 p-4 md:p-6", showSidebar ? "ml-0 md:ml-16" : "")}>
           {children}
         </main>
       </div>

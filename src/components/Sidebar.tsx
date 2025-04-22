@@ -63,7 +63,7 @@ const Sidebar = () => {
   };
   
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-full pt-5">
+    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 sticky top-16 pt-4 mt-0.5">
       <div className="space-y-6 px-4">
         <div className="space-y-3">
           <h3 className="text-xs uppercase text-gray-500 font-semibold px-3">

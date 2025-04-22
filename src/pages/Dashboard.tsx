@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Package, CreditCard, Users } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { RefundCalculator } from '@/components/RefundCalculator';
+import { PickupScheduler } from '@/components/PickupScheduler';
 
 interface DashboardStats {
   totalReturns: number;
@@ -17,6 +19,7 @@ interface DashboardStats {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  console.log(user);
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
@@ -26,9 +29,13 @@ const Dashboard = () => {
     totalCustomers: 0
   });
 
+const [returnId, setReturnId] = useState('');
+
   useEffect(() => {
     const fetchDashboardStats = async () => {
-      if (!user) return;
+      if (!user) {
+        return;
+      }
 
       try {
         // Fetch total returns
@@ -59,6 +66,8 @@ const Dashboard = () => {
           revenueImpact: totalReturns * 50, // Assuming average return value of $50
           totalCustomers: uniqueCustomers.size
         });
+        const returnId = returnsData[2]?.id;
+        setReturnId(returnId);
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         toast({
@@ -72,7 +81,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardStats();
-  }, [user, toast]);
+  }, [user, toast, loading]);
 
   if (loading) {
     return (
@@ -88,7 +97,7 @@ const Dashboard = () => {
     <Layout showSidebar merchantName={user?.store_name}>
       <div className="space-y-6 animate-fade-in">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Returns</CardTitle>
@@ -132,6 +141,12 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground">Unique customers</p>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <RefundCalculator merchantId={user?.id || ''} itemPrice={100} />
+          {/* TODO: Replace 'someReturnId' with the actual return ID you want to schedule a pickup for */}
+          <PickupScheduler returnId={returnId} onScheduled={() => {}} />
         </div>
       </div>
     </Layout>
