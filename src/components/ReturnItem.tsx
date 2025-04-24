@@ -19,6 +19,7 @@ export interface ReturnItemProps {
   productName: string;
   status: ReturnStatus;
   dateRequested: Date;
+  merchantId: string; // Added merchantId property
   onSelectItem: (id: string) => void;
 }
 

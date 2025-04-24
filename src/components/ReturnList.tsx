@@ -22,6 +22,7 @@ const mockReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = [
     productName: 'Summer Floral Dress',
     status: 'pending',
     dateRequested: new Date('2025-04-18'),
+    merchantId: 'merchant-123', // Added merchantId
   },
   {
     id: '2',
@@ -30,6 +31,7 @@ const mockReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = [
     productName: 'Leather Sneakers - White',
     status: 'approved',
     dateRequested: new Date('2025-04-17'),
+    merchantId: 'merchant-123', // Added merchantId
   },
   {
     id: '3',
@@ -38,6 +40,7 @@ const mockReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = [
     productName: 'Denim Jacket - Medium',
     status: 'denied',
     dateRequested: new Date('2025-04-15'),
+    merchantId: 'merchant-123', // Added merchantId
   },
   {
     id: '4',
@@ -46,6 +49,7 @@ const mockReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = [
     productName: 'Winter Gloves - Black',
     status: 'completed',
     dateRequested: new Date('2025-04-12'),
+    merchantId: 'merchant-123', // Added merchantId
   },
   {
     id: '5',
@@ -54,6 +58,7 @@ const mockReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = [
     productName: 'Cotton T-Shirt - Blue',
     status: 'approved',
     dateRequested: new Date('2025-04-10'),
+    merchantId: 'merchant-123', // Added merchantId
   },
 ];
 
