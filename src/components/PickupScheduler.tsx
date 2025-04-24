@@ -1,32 +1,26 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { toast } from '@/hooks/use-toast';
+import { ReturnItemProps } from './ReturnItem';
+import { ReturnSelector } from './pickup/ReturnSelector';
+import { PickupForm } from './pickup/PickupForm';
 
 type Pickup = Database['public']['Tables']['pickups']['Insert'];
 
-const TIME_SLOTS = [
-  { id: 'morning', label: 'Morning (9:00 - 12:00)' },
-  { id: 'afternoon', label: 'Afternoon (12:00 - 17:00)' },
-  { id: 'evening', label: 'Evening (17:00 - 20:00)' },
-];
-
-const PACKAGE_SIZES = [
-  { id: 'small', label: 'Small (up to 2kg)' },
-  { id: 'medium', label: 'Medium (2-5kg)' },
-  { id: 'large', label: 'Large (5-10kg)' },
-];
-
 interface PickupSchedulerProps {
-  returnId: string;
+  returnId?: string;
   onScheduled: () => void;
+  approvedReturns: Omit<ReturnItemProps, 'onSelectItem'>[];
 }
 
-export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps) {
+export function PickupScheduler({ returnId, onScheduled, approvedReturns }: PickupSchedulerProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedReturnId, setSelectedReturnId] = useState(returnId || '');
 
   const [formData, setFormData] = useState<Partial<Pickup>>({
     pickup_date: '',
@@ -40,6 +34,15 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedReturnId) {
+      toast({
+        title: "Error",
+        description: "Please select a return to schedule pickup for",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -55,7 +58,7 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
 
       const pickup: Pickup = {
         user_id: user.id,
-        return_id: returnId || crypto.randomUUID(),
+        return_id: selectedReturnId,
         pickup_date: formData.pickup_date!,
         time_slot: formData.time_slot!,
         address: formData.address!,
@@ -73,15 +76,19 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
       if (insertError) throw insertError;
 
       onScheduled();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to schedule pickup');
-    } finally {
-      setLoading(false);
       toast({
         title: 'Success',
         description: 'Your pickup has been successfully scheduled.',
-        variant: 'default',
       });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule pickup');
+      toast({
+        title: 'Error',
+        description: 'Failed to schedule pickup. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,7 +99,6 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
 
   // Mock courier API integration
   const mockScheduleCourier = async (data: { date: string; timeSlot: string; address: string }) => {
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     return {
       success: true,
@@ -110,120 +116,21 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pickup Date
-          </label>
-          <input
-            type="date"
-            name="pickup_date"
-            value={formData.pickup_date}
-            onChange={handleInputChange}
-            min={new Date().toISOString().split('T')[0]}
-            required
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <ReturnSelector
+          approvedReturns={approvedReturns}
+          selectedReturnId={selectedReturnId}
+          onReturnSelect={setSelectedReturnId}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Time Slot
-          </label>
-          <select
-            name="time_slot"
-            value={formData.time_slot}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            {TIME_SLOTS.map(slot => (
-              <option key={slot.id} value={slot.id}>
-                {slot.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Address
-          </label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              City
-            </label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Postal Code
-            </label>
-            <input
-              type="text"
-              name="postal_code"
-              value={formData.postal_code}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Package Size
-          </label>
-          <select
-            name="package_size"
-            value={formData.package_size}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            {PACKAGE_SIZES.map(size => (
-              <option key={size.id} value={size.id}>
-                {size.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Additional Notes
-          </label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleInputChange}
-            rows={3}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
+        <PickupForm 
+          formData={formData}
+          onChange={handleInputChange}
+        />
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !selectedReturnId}
           className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {loading ? 'Scheduling...' : 'Schedule Pickup'}

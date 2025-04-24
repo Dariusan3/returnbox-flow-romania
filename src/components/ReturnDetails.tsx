@@ -207,6 +207,7 @@ const ReturnDetails = ({ returnItem, approvedReturns = [], onBack }: ReturnDetai
             <div className="border rounded-lg p-4">
               <PickupScheduler 
                 returnId={returnItem.id}
+                approvedReturns={approvedReturns}
                 onScheduled={() => {
                   toast({
                     title: "Pickup scheduled",
