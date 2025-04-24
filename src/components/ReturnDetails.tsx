@@ -1,13 +1,15 @@
-
 import React, { useState } from 'react';
 import { ReturnItemProps } from './ReturnItem';
 import StatusBadge from './StatusBadge';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ChevronLeft, Truck, Check, X, Phone, Mail } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PickupScheduler } from './PickupScheduler';
+import { RefundCalculator } from './RefundCalculator';
 import LoadingSpinner from './ui/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { Phone, Mail, Truck, Check, X, ChevronLeft } from 'lucide-react';
 
 interface ReturnDetailsProps {
   returnItem: Omit<ReturnItemProps, 'onSelectItem'>;
@@ -19,7 +21,7 @@ const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
   const [notes, setNotes] = useState('');
   const [isApproving, setIsApproving] = useState(false);
   const [isDenying, setIsDenying] = useState(false);
-  const [isGeneratingAWB, setIsGeneratingAWB] = useState(false);
+  const [selectedCondition, setSelectedCondition] = useState('');
   
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
@@ -49,18 +51,10 @@ const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
     }, 1500);
   };
   
-  const handleGenerateAWB = () => {
-    setIsGeneratingAWB(true);
-    setTimeout(() => {
-      setIsGeneratingAWB(false);
-      toast({
-        title: "AWB generated",
-        description: "AWB #RO123456789 has been generated and sent to the customer.",
-      });
-      onBack();
-    }, 1500);
+  const handleConditionSelect = (condition: string) => {
+    setSelectedCondition(condition);
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 animate-fade-in">
       <div className="mb-6">
@@ -123,85 +117,117 @@ const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
             </>
           ) : returnItem.status === 'approved' ? (
             <Button 
-              onClick={handleGenerateAWB}
-              disabled={isGeneratingAWB}
+              onClick={() => {}}
+              disabled={false}
             >
-              {isGeneratingAWB ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Truck className="h-4 w-4 mr-2" />
-                  Generate AWB
-                </>
-              )}
+              <>
+                <Truck className="h-4 w-4 mr-2" />
+                Generate AWB
+              </>
             </Button>
           ) : null}
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-lg font-medium mb-4">Customer Information</h2>
-          <div className="bg-returnbox-soft-gray p-4 rounded-lg">
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">Customer Name</p>
-              <p className="font-medium">{returnItem.customerName}</p>
-            </div>
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">Email</p>
-              <div className="flex items-center">
-                <p className="font-medium">customer@example.com</p>
-                <Button variant="ghost" size="sm" className="ml-2">
-                  <Mail className="h-4 w-4" />
-                </Button>
+      <Tabs defaultValue="details" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          {returnItem.status === 'approved' && (
+            <TabsTrigger value="pickup">Schedule Pickup</TabsTrigger>
+          )}
+          <TabsTrigger value="refund">Estimated Refund</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h2 className="text-lg font-medium mb-4">Customer Information</h2>
+              <div className="bg-returnbox-soft-gray p-4 rounded-lg">
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">Customer Name</p>
+                  <p className="font-medium">{returnItem.customerName}</p>
+                </div>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">Email</p>
+                  <div className="flex items-center">
+                    <p className="font-medium">customer@example.com</p>
+                    <Button variant="ghost" size="sm" className="ml-2">
+                      <Mail className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <div className="flex items-center">
+                    <p className="font-medium">+40 721 234 567</p>
+                    <Button variant="ghost" size="sm" className="ml-2">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
+            
             <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <div className="flex items-center">
-                <p className="font-medium">+40 721 234 567</p>
-                <Button variant="ghost" size="sm" className="ml-2">
-                  <Phone className="h-4 w-4" />
-                </Button>
+              <h2 className="text-lg font-medium mb-4">Product Information</h2>
+              <div className="bg-returnbox-soft-gray p-4 rounded-lg">
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">Product</p>
+                  <p className="font-medium">{returnItem.productName}</p>
+                </div>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">Reason for Return</p>
+                  <p className="font-medium">Size Issue</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Additional Details</p>
+                  <p>The size is too small for me, I would like to exchange it for a larger size or get a refund.</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div>
-          <h2 className="text-lg font-medium mb-4">Product Information</h2>
-          <div className="bg-returnbox-soft-gray p-4 rounded-lg">
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">Product</p>
-              <p className="font-medium">{returnItem.productName}</p>
-            </div>
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">Reason for Return</p>
-              <p className="font-medium">Size Issue</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Additional Details</p>
-              <p>The size is too small for me, I would like to exchange it for a larger size or get a refund.</p>
+          
+          <div className="mt-8">
+            <h2 className="text-lg font-medium mb-4">Internal Notes</h2>
+            <Textarea 
+              placeholder="Add notes about this return (only visible to you)"
+              className="min-h-[100px]"
+              value={notes}
+              onChange={handleNotesChange}
+            />
+            <div className="mt-2 text-right">
+              <Button variant="outline" size="sm">Save Notes</Button>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <div className="mt-8">
-        <h2 className="text-lg font-medium mb-4">Internal Notes</h2>
-        <Textarea 
-          placeholder="Add notes about this return (only visible to you)"
-          className="min-h-[100px]"
-          value={notes}
-          onChange={handleNotesChange}
-        />
-        <div className="mt-2 text-right">
-          <Button variant="outline" size="sm">Save Notes</Button>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="pickup">
+          {returnItem.status === 'approved' && (
+            <div className="border rounded-lg p-4">
+              <PickupScheduler 
+                returnId={returnItem.id} 
+                onScheduled={() => {
+                  toast({
+                    title: "Pickup scheduled",
+                    description: "The pickup has been successfully scheduled.",
+                  });
+                  onBack();
+                }} 
+              />
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="refund">
+          <div className="border rounded-lg p-4">
+            <RefundCalculator 
+              merchantId={returnItem.merchantId} 
+              itemPrice={100} 
+              onConditionSelect={handleConditionSelect}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
