@@ -6,6 +6,7 @@ import { Database } from '@/types/supabase';
 import { toast } from '@/hooks/use-toast';
 import { ReturnSelector } from './pickup/ReturnSelector';
 import { PickupForm } from './pickup/PickupForm';
+import type { ReturnItemProps } from './ReturnItem';
 
 type Pickup = Database['public']['Tables']['pickups']['Insert'];
 type Return = Database['public']['Tables']['returns']['Row'];
@@ -15,13 +16,14 @@ type PackageSize = 'small' | 'medium' | 'large';
 interface PickupSchedulerProps {
   returnId?: string;
   onScheduled: () => void;
+  approvedReturns?: Omit<ReturnItemProps, 'onSelectItem'>[] | Return[];
 }
 
-export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps) {
+export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }: PickupSchedulerProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [approvedReturns, setApprovedReturns] = useState<Return[]>([]);
+  const [fetchedReturns, setFetchedReturns] = useState<Return[]>([]);
   const [selectedReturnId, setSelectedReturnId] = useState(returnId || '');
 
   const [formData, setFormData] = useState({
@@ -36,7 +38,7 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
 
   useEffect(() => {
     const fetchApprovedReturns = async () => {
-      if (!user) return;
+      if (!user || approvedReturns.length > 0) return;
 
       try {
         const { data, error } = await supabase
@@ -46,7 +48,7 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
           .eq('status', 'approved');
 
         if (error) throw error;
-        setApprovedReturns(data || []);
+        setFetchedReturns(data || []);
       } catch (err) {
         console.error('Error fetching approved returns:', err);
         toast({
@@ -58,7 +60,10 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
     };
 
     fetchApprovedReturns();
-  }, [user]);
+  }, [user, approvedReturns]);
+
+  // Use provided returns or fetched returns
+  const returnsToDisplay = approvedReturns.length > 0 ? approvedReturns : fetchedReturns;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +163,7 @@ export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps)
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <ReturnSelector
-          approvedReturns={approvedReturns}
+          approvedReturns={returnsToDisplay as Return[]}
           selectedReturnId={selectedReturnId}
           onReturnSelect={setSelectedReturnId}
         />
