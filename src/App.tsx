@@ -29,8 +29,6 @@ const queryClient = new QueryClient();
 // Protected route wrapper component
 const ProtectedRoute = ({ element, requiredRole }) => {
   const { user, isAuthenticated } = useAuth();
-  console.log(user);
-  console.log(isAuthenticated);
   
   // if (!isAuthenticated) {
   //   return <Navigate to="/login" />;

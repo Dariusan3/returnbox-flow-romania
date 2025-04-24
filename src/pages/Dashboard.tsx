@@ -10,6 +10,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { RefundCalculator } from '@/components/RefundCalculator';
 import { PickupScheduler } from '@/components/PickupScheduler';
 import { ReturnItemProps } from '@/components/ReturnItem';
+import { Database } from '@/types/supabase';
 
 interface DashboardStats {
   totalReturns: number;
@@ -18,9 +19,10 @@ interface DashboardStats {
   totalCustomers: number;
 }
 
+type Return = Database['public']['Tables']['returns']['Row'];
+
 const Dashboard = () => {
   const { user } = useAuth();
-  console.log(user);
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
@@ -31,7 +33,7 @@ const Dashboard = () => {
   });
 
   const [returnId, setReturnId] = useState('');
-  const [approvedReturns, setApprovedReturns] = useState<Omit<ReturnItemProps, 'onSelectItem'>[]>([]);
+  const [approvedReturns, setApprovedReturns] = useState<Return[]>([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -43,7 +45,7 @@ const Dashboard = () => {
         // Fetch total returns
         const { data: returnsData, error: returnsError } = await supabase
           .from('returns')
-          .select('id, status')
+          .select("*")
           .eq('merchant_id', user.id);
 
         if (returnsError) throw returnsError;
@@ -51,6 +53,9 @@ const Dashboard = () => {
         // Calculate stats
         const totalReturns = returnsData?.length || 0;
         const pendingReturns = returnsData?.filter(r => r.status === 'pending').length || 0;
+        const approvedReturns = returnsData?.filter(r => r.status === 'approved');
+        console.log(approvedReturns); // Debugging line
+        setApprovedReturns(approvedReturns);
 
         // Fetch unique customers
         const { data: customersData, error: customersError } = await supabase
@@ -63,19 +68,6 @@ const Dashboard = () => {
         const uniqueCustomers = new Set(customersData?.map(r => r.customer_email));
 
         // Transform returns data for ReturnItemProps
-        const mockApprovedReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = returnsData
-          ?.filter(r => r.status === 'approved')
-          .map((r, index) => ({
-            id: r.id,
-            customerName: `Customer ${index + 1}`,
-            orderNumber: `ORD${1000 + index}`,
-            productName: `Product ${index + 1}`,
-            status: 'approved',
-            dateRequested: new Date(),
-            merchantId: user.id,
-          })) || [];
-
-        setApprovedReturns(mockApprovedReturns);
         setStats({
           totalReturns,
           pendingReturns,

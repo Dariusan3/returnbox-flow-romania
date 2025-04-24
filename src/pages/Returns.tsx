@@ -41,7 +41,7 @@ interface ReturnRequest {
   reason: string;
   customer_email: string;
   photo_url: string | null;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'shipped';
   notes: string | null;
   created_at: string;
 }
@@ -119,7 +119,6 @@ const Returns = () => {
         .update({ status: newStatus })
         .eq('id', returnId);
 
-      console.log(returnId);
         
       if (error) throw error;
       
@@ -128,7 +127,6 @@ const Returns = () => {
         item.id === returnId ? { ...item, status: newStatus } : item
       ));
 
-      console.log(returns);
 
       setHasChanges(true); // Set hasChanges to true after status change
       
@@ -272,14 +270,18 @@ const Returns = () => {
                     <TableCell>{returnItem.customer_email}</TableCell>
                     <TableCell>{format(new Date(returnItem.created_at), 'dd MMM yyyy')}</TableCell>
                     <TableCell>
-                      <Select
+                      {returnItem.status === 'shipped' && (
+                        <StatusBadge status={returnItem.status} />
+                      )}
+                      {returnItem.status !=='shipped' && (
+                        <Select
                         defaultValue={returnItem.status}
                         onValueChange={(value) => 
                           handleStatusChange(
                             returnItem.id, 
                             value as 'pending' | 'approved' | 'rejected'
                           )
-                        }
+                        } 
                       >
                         <SelectTrigger className="w-[130px]">
                           <SelectValue>
@@ -307,6 +309,7 @@ const Returns = () => {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">

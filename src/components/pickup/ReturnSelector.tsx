@@ -26,8 +26,9 @@ export const ReturnSelector = ({
 }: ReturnSelectorProps) => {
   // Helper function to determine whether the object is a ReturnItem or a Return
   const isReturnItem = (item: Return | ReturnItem): item is ReturnItem => {
-    return 'productName' in item;
+    return (item as ReturnItem).orderNumber !== undefined;
   };
+
 
   // Extract display information based on return type
   const getReturnDisplayInfo = (returnItem: Return | ReturnItem) => {

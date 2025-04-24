@@ -24,7 +24,6 @@ const CustomerForm = () => {
           return;
         }
 
-        console.log('Fetching store with slug:', storeSlug);
 
         // First try with the exact slug
         let { data, error } = await supabase
@@ -35,7 +34,6 @@ const CustomerForm = () => {
 
         // If not found, try case-insensitive search
         if (error || !data) {
-          console.log('Exact slug not found, trying case-insensitive search');
           const { data: allMerchants, error: merchError } = await supabase
             .from('merchants')
             .select('id, store_name, store_slug');
@@ -55,7 +53,6 @@ const CustomerForm = () => {
 
         if (error || !data) {
           // As a fallback, try to match by store name
-          console.log('Trying to match by store name...');
           const { data: storeData, error: storeError } = await supabase
             .from('merchants')
             .select('id, store_name')
@@ -70,7 +67,6 @@ const CustomerForm = () => {
           }
         }
 
-        console.log('Found store:', data);
         setMerchantId(data.id);
         setStoreName(data.store_name || 'Store');
       } catch (error) {

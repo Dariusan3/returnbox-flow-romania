@@ -32,7 +32,6 @@ const Stores = () => {
         .order('store_name');
 
         if (error) throw error;
-        console.log(data);
         setStores(data || []);
       } catch (error) {
         toast({

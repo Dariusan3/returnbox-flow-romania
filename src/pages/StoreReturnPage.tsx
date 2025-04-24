@@ -25,7 +25,6 @@ const StoreReturnPage = () => {
           throw new Error('No store slug provided');
         }
 
-        console.log('Fetching store with slug:', storeSlug);
         
         // Try exact match first
         let { data, error } = await supabase
@@ -37,7 +36,6 @@ const StoreReturnPage = () => {
         
         // If not found, try case-insensitive search
         if (error || !data) {
-          console.log('Exact slug not found, trying case-insensitive search');
           const { data: allStores, error: storeError } = await supabase
             .from('profiles')
             .select('id, store_name, store_logo, store_slug')
@@ -58,7 +56,6 @@ const StoreReturnPage = () => {
         
         // As a last resort, try to match by store name
         if (error || !data) {
-          console.log('Trying to match by store name...');
           const { data: nameData, error: nameError } = await supabase
             .from('profiles')
             .select('id, store_name, store_logo')
@@ -74,7 +71,6 @@ const StoreReturnPage = () => {
           }
         }
         
-        console.log('Found store:', data);
         setStoreData(data);
       } catch (error) {
         console.error('Error fetching store data:', error);
