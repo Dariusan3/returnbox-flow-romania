@@ -163,7 +163,7 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <ReturnSelector
-          approvedReturns={returnsToDisplay as Return[]}
+          approvedReturns={returnsToDisplay}
           selectedReturnId={selectedReturnId}
           onReturnSelect={setSelectedReturnId}
         />
