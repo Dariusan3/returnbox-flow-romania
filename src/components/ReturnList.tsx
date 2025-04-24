@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ReturnItem, { ReturnItemProps } from './ReturnItem';
 import ReturnDetails from './ReturnDetails';
@@ -88,6 +87,9 @@ const ReturnList = () => {
     
     return matchesStatus && matchesSearch;
   });
+
+  // Add new filter for approved returns
+  const approvedReturns = mockReturns.filter(item => item.status === 'approved');
   
   const selectedItem = mockReturns.find((item) => item.id === selectedItemId);
   
@@ -95,7 +97,8 @@ const ReturnList = () => {
     <div className="animate-fade-in">
       {selectedItem ? (
         <ReturnDetails 
-          returnItem={selectedItem} 
+          returnItem={selectedItem}
+          approvedReturns={approvedReturns} 
           onBack={() => setSelectedItemId(null)} 
         />
       ) : (

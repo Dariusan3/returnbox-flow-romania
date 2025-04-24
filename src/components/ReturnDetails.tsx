@@ -13,10 +13,11 @@ import { Phone, Mail, Truck, Check, X, ChevronLeft } from 'lucide-react';
 
 interface ReturnDetailsProps {
   returnItem: Omit<ReturnItemProps, 'onSelectItem'>;
+  approvedReturns?: Omit<ReturnItemProps, 'onSelectItem'>[];
   onBack: () => void;
 }
 
-const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
+const ReturnDetails = ({ returnItem, approvedReturns = [], onBack }: ReturnDetailsProps) => {
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
   const [isApproving, setIsApproving] = useState(false);
@@ -205,14 +206,14 @@ const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
           {returnItem.status === 'approved' && (
             <div className="border rounded-lg p-4">
               <PickupScheduler 
-                returnId={returnItem.id} 
+                returnId={returnItem.id}
                 onScheduled={() => {
                   toast({
                     title: "Pickup scheduled",
                     description: "The pickup has been successfully scheduled.",
                   });
                   onBack();
-                }} 
+                }}
               />
             </div>
           )}
@@ -221,8 +222,8 @@ const ReturnDetails = ({ returnItem, onBack }: ReturnDetailsProps) => {
         <TabsContent value="refund">
           <div className="border rounded-lg p-4">
             <RefundCalculator 
-              merchantId={returnItem.merchantId} 
-              itemPrice={100} 
+              merchantId={returnItem.merchantId}
+              itemPrice={100}
               onConditionSelect={handleConditionSelect}
             />
           </div>

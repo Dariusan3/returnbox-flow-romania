@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
@@ -10,39 +11,22 @@ interface RefundCalculatorProps {
   onConditionSelect?: (condition: string) => void;
 }
 
+const CONDITIONS = [
+  { id: 'new', label: 'New with tags', percentage: 100 },
+  { id: 'like_new', label: 'Like new', percentage: 90 },
+  { id: 'good', label: 'Good condition', percentage: 75 },
+  { id: 'fair', label: 'Fair condition', percentage: 50 },
+  { id: 'poor', label: 'Poor condition', percentage: 25 },
+];
+
 export function RefundCalculator({ merchantId, itemPrice, onConditionSelect }: RefundCalculatorProps) {
-  const [policies, setPolicies] = useState<RefundPolicy[]>([]);
   const [selectedCondition, setSelectedCondition] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [refundAmount, setRefundAmount] = useState<number>(0);
 
-  useEffect(() => {
-    fetchRefundPolicies();
-  }, [merchantId]);
-
-  const fetchRefundPolicies = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('refund_policies')
-        .select('*')
-        .eq('merchant_id', merchantId);
-
-      if (error) throw error;
-      setPolicies(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch refund policies');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const calculateRefund = (condition: string) => {
-    const policy = policies.find(p => p.item_condition === condition);
+    const policy = CONDITIONS.find(p => p.id === condition);
     if (!policy) return 0;
-
-    const refundAmount = (itemPrice * policy.refund_percentage) / 100;
-    return Math.round(refundAmount * 100) / 100; // Round to 2 decimal places
+    return (itemPrice * policy.percentage) / 100;
   };
 
   const handleConditionChange = (condition: string) => {
@@ -52,65 +36,6 @@ export function RefundCalculator({ merchantId, itemPrice, onConditionSelect }: R
     onConditionSelect?.(condition);
   };
 
-  // Update to include more detailed policy information
-  const RefundPolicyCard = ({ policy }: { policy: RefundPolicy }) => (
-    <label
-      className={`
-        flex items-center p-4 border rounded-lg cursor-pointer transition-colors
-        ${selectedCondition === policy.item_condition
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-200 hover:border-blue-200'}
-      `}
-    >
-      <input
-        type="radio"
-        name="condition"
-        value={policy.item_condition}
-        checked={selectedCondition === policy.item_condition}
-        onChange={(e) => handleConditionChange(e.target.value)}
-        className="sr-only"
-      />
-      <div className="flex-1">
-        <div className="flex justify-between items-center">
-          <span className="font-medium capitalize">
-            {policy.item_condition}
-          </span>
-          <span className="text-sm text-gray-500">
-            {policy.refund_percentage}% refund
-          </span>
-        </div>
-        {policy.description && (
-          <p className="text-sm text-gray-500 mt-2">
-            {policy.description}
-          </p>
-        )}
-        {selectedCondition === policy.item_condition && (
-          <div className="mt-3 p-3 bg-blue-50 rounded-md">
-            <p className="text-sm text-blue-700">
-              Expected refund amount: ${calculateRefund(policy.item_condition).toFixed(2)}
-            </p>
-          </div>
-        )}
-      </div>
-    </label>
-  );
-
-  if (loading) {
-    return (
-      <div className="p-4 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 text-red-600 text-center">
-        {error}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -119,8 +44,42 @@ export function RefundCalculator({ merchantId, itemPrice, onConditionSelect }: R
           Select the condition of your item to see the estimated refund amount.
         </p>
         <div className="space-y-3">
-          {policies.map((policy) => (
-            <RefundPolicyCard key={policy.item_condition} policy={policy} />
+          {CONDITIONS.map((condition) => (
+            <label
+              key={condition.id}
+              className={`
+                flex items-center p-4 border rounded-lg cursor-pointer transition-colors
+                ${selectedCondition === condition.id
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-blue-200'}
+              `}
+            >
+              <input
+                type="radio"
+                name="condition"
+                value={condition.id}
+                checked={selectedCondition === condition.id}
+                onChange={(e) => handleConditionChange(e.target.value)}
+                className="sr-only"
+              />
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">
+                    {condition.label}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {condition.percentage}% refund
+                  </span>
+                </div>
+                {selectedCondition === condition.id && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-700">
+                      Expected refund amount: ${calculateRefund(condition.id).toFixed(2)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </label>
           ))}
         </div>
       </div>
