@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ReturnItemProps } from '../ReturnItem';
+import type { Database } from '@/types/supabase';
 import {
   Select,
   SelectContent,
@@ -9,8 +9,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+type Return = Database['public']['Tables']['returns']['Row'];
+
 interface ReturnSelectorProps {
-  approvedReturns: Omit<ReturnItemProps, 'onSelectItem'>[];
+  approvedReturns: Return[];
   selectedReturnId: string;
   onReturnSelect: (returnId: string) => void;
 }
@@ -33,7 +35,7 @@ export const ReturnSelector = ({
           {approvedReturns && approvedReturns.length > 0 ? (
             approvedReturns.map((returnItem) => (
               <SelectItem key={returnItem.id} value={returnItem.id}>
-                Order #{returnItem.orderNumber} - {returnItem.productName}
+                Order #{returnItem.order_id} - {returnItem.product_name}
               </SelectItem>
             ))
           ) : (
@@ -46,3 +48,4 @@ export const ReturnSelector = ({
     </div>
   );
 };
+

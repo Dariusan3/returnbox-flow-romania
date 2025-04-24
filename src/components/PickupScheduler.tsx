@@ -1,27 +1,27 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { toast } from '@/hooks/use-toast';
-import { ReturnItemProps } from './ReturnItem';
 import { ReturnSelector } from './pickup/ReturnSelector';
 import { PickupForm } from './pickup/PickupForm';
 
 type Pickup = Database['public']['Tables']['pickups']['Insert'];
+type Return = Database['public']['Tables']['returns']['Row'];
 type TimeSlot = 'morning' | 'afternoon' | 'evening';
 type PackageSize = 'small' | 'medium' | 'large';
 
 interface PickupSchedulerProps {
   returnId?: string;
   onScheduled: () => void;
-  approvedReturns: Omit<ReturnItemProps, 'onSelectItem'>[];
 }
 
-export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }: PickupSchedulerProps) {
+export function PickupScheduler({ returnId, onScheduled }: PickupSchedulerProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [approvedReturns, setApprovedReturns] = useState<Return[]>([]);
   const [selectedReturnId, setSelectedReturnId] = useState(returnId || '');
 
   const [formData, setFormData] = useState({
@@ -33,6 +33,32 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
     package_size: 'medium' as PackageSize,
     notes: '',
   });
+
+  useEffect(() => {
+    const fetchApprovedReturns = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('returns')
+          .select('*')
+          .eq('merchant_id', user.id)
+          .eq('status', 'approved');
+
+        if (error) throw error;
+        setApprovedReturns(data || []);
+      } catch (err) {
+        console.error('Error fetching approved returns:', err);
+        toast({
+          title: 'Error',
+          description: 'Failed to load approved returns.',
+          variant: 'destructive',
+        });
+      }
+    };
+
+    fetchApprovedReturns();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,11 +97,20 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
         notes: formData.notes,
       };
 
+      // Create pickup record
       const { error: insertError } = await supabase
         .from('pickups')
         .insert([pickup]);
 
       if (insertError) throw insertError;
+
+      // Update return status to shipped
+      const { error: updateError } = await supabase
+        .from('returns')
+        .update({ status: 'shipped' })
+        .eq('id', selectedReturnId);
+
+      if (updateError) throw updateError;
 
       onScheduled();
       toast({

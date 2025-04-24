@@ -138,6 +138,47 @@ export interface Database {
           address?: string
         }
       }
+      returns: {
+        Row: {
+          id: string
+          merchant_id: string
+          order_id: string
+          product_name: string
+          reason: string
+          customer_email: string
+          photo_url?: string
+          status: 'pending' | 'approved' | 'rejected' | 'shipped'
+          notes?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          merchant_id: string
+          order_id: string
+          product_name: string
+          reason: string
+          customer_email: string
+          photo_url?: string
+          status?: 'pending' | 'approved' | 'rejected' | 'shipped'
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          merchant_id?: string
+          order_id?: string
+          product_name?: string
+          reason?: string
+          customer_email?: string
+          photo_url?: string
+          status?: 'pending' | 'approved' | 'rejected' | 'shipped'
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
