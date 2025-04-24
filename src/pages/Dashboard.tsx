@@ -9,6 +9,7 @@ import { BarChart, Package, CreditCard, Users } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { RefundCalculator } from '@/components/RefundCalculator';
 import { PickupScheduler } from '@/components/PickupScheduler';
+import { ReturnItemProps } from '@/components/ReturnItem';
 
 interface DashboardStats {
   totalReturns: number;
@@ -29,7 +30,8 @@ const Dashboard = () => {
     totalCustomers: 0
   });
 
-const [returnId, setReturnId] = useState('');
+  const [returnId, setReturnId] = useState('');
+  const [approvedReturns, setApprovedReturns] = useState<Omit<ReturnItemProps, 'onSelectItem'>[]>([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -60,6 +62,20 @@ const [returnId, setReturnId] = useState('');
 
         const uniqueCustomers = new Set(customersData?.map(r => r.customer_email));
 
+        // Transform returns data for ReturnItemProps
+        const mockApprovedReturns: Omit<ReturnItemProps, 'onSelectItem'>[] = returnsData
+          ?.filter(r => r.status === 'approved')
+          .map((r, index) => ({
+            id: r.id,
+            customerName: `Customer ${index + 1}`,
+            orderNumber: `ORD${1000 + index}`,
+            productName: `Product ${index + 1}`,
+            status: 'approved',
+            dateRequested: new Date(),
+            merchantId: user.id,
+          })) || [];
+
+        setApprovedReturns(mockApprovedReturns);
         setStats({
           totalReturns,
           pendingReturns,
@@ -145,8 +161,11 @@ const [returnId, setReturnId] = useState('');
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <RefundCalculator merchantId={user?.id || ''} itemPrice={100} />
-          {/* TODO: Replace 'someReturnId' with the actual return ID you want to schedule a pickup for */}
-          <PickupScheduler returnId={returnId} onScheduled={() => {}} />
+          <PickupScheduler 
+            returnId={returnId} 
+            onScheduled={() => {}} 
+            approvedReturns={approvedReturns} 
+          />
         </div>
       </div>
     </Layout>
@@ -154,4 +173,3 @@ const [returnId, setReturnId] = useState('');
 };
 
 export default Dashboard;
-

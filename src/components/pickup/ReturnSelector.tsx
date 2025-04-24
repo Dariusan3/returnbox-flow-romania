@@ -16,7 +16,7 @@ interface ReturnSelectorProps {
 }
 
 export const ReturnSelector = ({
-  approvedReturns,
+  approvedReturns = [],
   selectedReturnId,
   onReturnSelect,
 }: ReturnSelectorProps) => {
@@ -30,11 +30,17 @@ export const ReturnSelector = ({
           <SelectValue placeholder="Select an approved return" />
         </SelectTrigger>
         <SelectContent>
-          {approvedReturns.map((returnItem) => (
-            <SelectItem key={returnItem.id} value={returnItem.id}>
-              Order #{returnItem.orderNumber} - {returnItem.productName}
+          {approvedReturns && approvedReturns.length > 0 ? (
+            approvedReturns.map((returnItem) => (
+              <SelectItem key={returnItem.id} value={returnItem.id}>
+                Order #{returnItem.orderNumber} - {returnItem.productName}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem value="no-returns" disabled>
+              No approved returns available
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
     </div>

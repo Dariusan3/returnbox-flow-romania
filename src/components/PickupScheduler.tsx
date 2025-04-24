@@ -16,13 +16,13 @@ interface PickupSchedulerProps {
   approvedReturns: Omit<ReturnItemProps, 'onSelectItem'>[];
 }
 
-export function PickupScheduler({ returnId, onScheduled, approvedReturns }: PickupSchedulerProps) {
+export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }: PickupSchedulerProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedReturnId, setSelectedReturnId] = useState(returnId || '');
 
-  const [formData, setFormData] = useState<Partial<Pickup>>({
+  const [formData, setFormData] = useState({
     pickup_date: '',
     time_slot: 'morning',
     address: user?.address || '',
@@ -51,20 +51,20 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns }: Pick
 
       // Mock courier API call
       const mockCourierResponse = await mockScheduleCourier({
-        date: formData.pickup_date!,
-        timeSlot: formData.time_slot!,
-        address: formData.address!,
+        date: formData.pickup_date,
+        timeSlot: formData.time_slot,
+        address: formData.address,
       });
 
       const pickup: Pickup = {
         user_id: user.id,
         return_id: selectedReturnId,
-        pickup_date: formData.pickup_date!,
-        time_slot: formData.time_slot!,
-        address: formData.address!,
-        city: formData.city!,
-        postal_code: formData.postal_code!,
-        package_size: formData.package_size!,
+        pickup_date: formData.pickup_date,
+        time_slot: formData.time_slot,
+        address: formData.address,
+        city: formData.city,
+        postal_code: formData.postal_code,
+        package_size: formData.package_size,
         courier_tracking_number: mockCourierResponse.trackingNumber,
         notes: formData.notes,
       };
