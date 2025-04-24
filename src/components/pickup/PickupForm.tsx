@@ -2,14 +2,17 @@
 import React from 'react';
 import { TIME_SLOTS, PACKAGE_SIZES } from './pickupConstants';
 
+type TimeSlot = 'morning' | 'afternoon' | 'evening';
+type PackageSize = 'small' | 'medium' | 'large';
+
 interface PickupFormProps {
   formData: {
     pickup_date: string;
-    time_slot: string;
+    time_slot: TimeSlot;
     address: string;
     city: string;
     postal_code: string;
-    package_size: string;
+    package_size: PackageSize;
     notes?: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
@@ -121,7 +124,7 @@ export const PickupForm = ({ formData, onChange }: PickupFormProps) => {
         </label>
         <textarea
           name="notes"
-          value={formData.notes}
+          value={formData.notes || ''}
           onChange={onChange}
           rows={3}
           className="w-full px-3 py-2 border rounded-md"

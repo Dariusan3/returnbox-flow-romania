@@ -9,6 +9,8 @@ import { ReturnSelector } from './pickup/ReturnSelector';
 import { PickupForm } from './pickup/PickupForm';
 
 type Pickup = Database['public']['Tables']['pickups']['Insert'];
+type TimeSlot = 'morning' | 'afternoon' | 'evening';
+type PackageSize = 'small' | 'medium' | 'large';
 
 interface PickupSchedulerProps {
   returnId?: string;
@@ -24,11 +26,11 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
 
   const [formData, setFormData] = useState({
     pickup_date: '',
-    time_slot: 'morning',
+    time_slot: 'morning' as TimeSlot,
     address: user?.address || '',
     city: user?.city || '',
     postal_code: user?.postal_code || '',
-    package_size: 'medium',
+    package_size: 'medium' as PackageSize,
     notes: '',
   });
 
@@ -94,11 +96,14 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: value 
+    }));
   };
 
   // Mock courier API integration
-  const mockScheduleCourier = async (data: { date: string; timeSlot: string; address: string }) => {
+  const mockScheduleCourier = async (data: { date: string; timeSlot: TimeSlot; address: string }) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return {
       success: true,
