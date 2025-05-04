@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 
 const MerchantProfile = () => {
   const { user } = useAuth();
-  console.log(user);
   const navigate = useNavigate();
 
   return (

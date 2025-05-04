@@ -60,7 +60,7 @@ export function PickupScheduler({ returnId, onScheduled, approvedReturns = [] }:
     };
 
     fetchApprovedReturns();
-  }, [user, approvedReturns]);
+  }, [user, approvedReturns, fetchedReturns]);
 
   // Use provided returns or fetched returns
   const returnsToDisplay = approvedReturns.length > 0 ? approvedReturns : fetchedReturns;
